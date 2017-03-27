@@ -8,4 +8,4 @@ serve:
 
 deploy:
 	appcfg.py update_indexes $(APPDIR) --noauth_local_webserver
-	goapp deploy $(APPYAML)
+	gcloud app deploy
