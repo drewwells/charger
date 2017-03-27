@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
 	"strings"
+
+	"golang.org/x/net/context"
+
+	"google.golang.org/appengine/urlfetch"
 
 	"github.com/BurntSushi/toml"
 )
@@ -25,15 +27,15 @@ func test() {
 		log.Fatal("failed to unmarshal config", err)
 	}
 
-	stations, err := fetchStatus()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// stations, err := fetchStatus()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	if len(stations) > 0 {
-		m := fmt.Sprintf("Available! %s", strings.Join(stations, ", "))
-		parseCred(c).sendSMS(m)
-	}
+	// if len(stations) > 0 {
+	// 	m := fmt.Sprintf("Available! %s", strings.Join(stations, ", "))
+	// 	parseCred(c).sendSMS(m)
+	// }
 }
 
 type safeStation Station
@@ -84,14 +86,15 @@ type SemaResp struct {
 
 var stations map[string]int
 
-func fetchStatus() ([]string, error) {
+func fetchStatus(ctx context.Context) ([]string, error) {
 
 	vals, err := url.ParseQuery("action=locationSearch&address=78759&pseudoParam= 1490292687569")
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.PostForm("https://network.semaconnect.com/get_data.php", vals)
+	cli := urlfetch.Client(ctx)
+	resp, err := cli.PostForm("https://network.semaconnect.com/get_data.php", vals)
 	if err != nil {
 		return nil, err
 	}

@@ -8,12 +8,13 @@ import (
 
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/mail"
 )
 
 func init() {
 
 	http.HandleFunc("/_ah/mail/", incomingMail)
-	http.handleFunc("/mailnotify", mail)
+	http.HandleFunc("/mailnotify", send)
 }
 
 func incomingMail(w http.ResponseWriter, r *http.Request) {
@@ -27,12 +28,12 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 	log.Infof(ctx, "Received mail: %v", b)
 }
 
-func mail(w http.ResponseWriter, r *http.Request) {
+func send(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 
-	stations, err := fetchStatus()
+	stations, err := fetchStatus(ctx)
 	if err != nil {
-		log.Error("failed to retrieve stations")
+		log.Errorf(ctx, "failed to retrieve stations")
 		return
 	}
 
