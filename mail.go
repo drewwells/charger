@@ -1,4 +1,4 @@
-package main
+package charger
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 func init() {
 
 	http.HandleFunc("/_ah/mail/", incomingMail)
-	http.HandleFunc("/mailnotify", send)
+	http.HandleFunc("/mailnotify", handleSend)
 }
 
 func incomingMail(w http.ResponseWriter, r *http.Request) {
@@ -28,9 +28,12 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 	log.Infof(ctx, "Received mail: %v", b)
 }
 
-func send(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
+var lastKnown bool
 
+func handleSend(w http.ResponseWriter, r *http.Request) {
+
+	ctx := appengine.NewContext(r)
+	lastKnown = false
 	stations, err := fetchStatus(ctx)
 	if err != nil {
 		log.Errorf(ctx, "failed to retrieve stations")
@@ -40,6 +43,7 @@ func send(w http.ResponseWriter, r *http.Request) {
 	subject := "No chargers available"
 	body := ""
 	if len(stations) > 0 {
+		lastKnown = true
 		subject = "Chargers Available!"
 		body = fmt.Sprintf("Available! %s", strings.Join(stations, ", "))
 	}

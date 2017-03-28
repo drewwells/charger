@@ -1,6 +1,6 @@
 // build +dev
 
-package main
+package charger
 
 func init() {
 	parseCred = func(c config) Cred {

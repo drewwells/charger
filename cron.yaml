@@ -1,4 +1,0 @@
-cron:
-- description: 15min email check
-  url: /mailnotify
-  schedule: every 15 minutes
